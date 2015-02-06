@@ -1,7 +1,15 @@
 public class Percolation {
 
+	private int gridSize;
+	private boolean[][] grid;
+
 	// constructor
-	public Percolation(int n) {}
+	public Percolation(int gridSize) {
+		this.gridSize = gridSize;
+
+		// initialize grid
+		this.grid = new boolean[gridSize][gridSize];
+	}
 
 	// open site (row i, column j) if it is not open already
 	public void open(int i, int j) {}
