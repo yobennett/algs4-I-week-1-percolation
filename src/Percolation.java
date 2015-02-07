@@ -59,7 +59,7 @@ public class Percolation {
 	// is site (row i, column j) full?
 	public boolean isFull(int i, int j) throws IndexOutOfBoundsException {
 		checkWithinGridBounds(i, j);
-		return false;
+		return isOpen(i, j) && nodes.connected(0, xyTo1D(i, j));
 	}
 
 	private void checkWithinGridBounds(int i, int j) {
@@ -76,20 +76,18 @@ public class Percolation {
 		return ((x - 1) * gridSize) + y;
 	}
 
-	private int[] toXY(int i) {
-		int x = (int) Math.floor(gridSize / i);
-		int y = i % gridSize;
-		return new int[] {x, y};
-	}
-
 	// does the system percolate?
 	public boolean percolates() {
+		for (int i = 1; i <= gridSize; i++) {
+			if (isFull(gridSize, i)) {
+				return true;
+			}
+		}
 		return false;
 	}
 
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		int[] xy;
 		for (int i = 1; i <= gridSize; i++) {
 			for (int j = 1; j <= gridSize; j++) {
 				if (isOpen(i, j)) {
