@@ -1,10 +1,16 @@
 public class Percolation {
 
 	private int gridSize;
-	private boolean[][] grid;
+	public boolean[][] grid;
 
 	// constructor
 	public Percolation(int gridSize) {
+
+		// gridSize must be positive
+		if (gridSize < 0) {
+			throw new IllegalArgumentException("grid size must be positive");
+		}
+
 		this.gridSize = gridSize;
 
 		// initialize grid
@@ -30,6 +36,8 @@ public class Percolation {
 	}
 
 	// test client (optional)
-	public static void main(String[] args) {}
+	public static void main(String[] args) {
+		Percolation p = new Percolation(3);
+	}
 
 }
