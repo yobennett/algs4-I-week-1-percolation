@@ -16,7 +16,10 @@ public class Percolation {
 		}
 
 		this.gridSize = gridSize;
+		initializeGrid(gridSize);
+	}
 
+	private void initializeGrid(int gridSize) {
 		// initialize grid, ignore first row and column
 		this.grid = new boolean[gridSize + 1][gridSize + 1];
 
@@ -25,17 +28,26 @@ public class Percolation {
 		this.virtualTopNodeIndex = 0;
 		this.virtualBottomNodeIndex = nodesSize - 1;
 		this.nodes = new WeightedQuickUnionUF(nodesSize);
+
+		// connect top row to virtual node
+		for (int i = 1; i <= gridSize; i++) {
+			nodes.union(virtualTopNodeIndex, xyTo1D(1, i));
+		}
+
+		// connect bottom row to virtual node
+		for (int j = 1; j <= gridSize; j++) {
+			nodes.union(virtualBottomNodeIndex, xyTo1D(gridSize, j));
+		}
 	}
 
 	// open site (row i, column j) if it is not open already
 	public void open(int i, int j) throws IndexOutOfBoundsException {
 		checkWithinGridBounds(i, j);
 
-		// already open
-		if (isOpen(i, j)) {
-			return;
-		}
+		// not already open
+		if (!isOpen(i, j)) {
 
+		}
 	}
 
 	// is site (row i, column j) open?
@@ -64,6 +76,12 @@ public class Percolation {
 		return ((x - 1) * gridSize) + y;
 	}
 
+	private int[] toXY(int i) {
+		int x = (int) Math.floor(gridSize / i);
+		int y = i % gridSize;
+		return new int[] {x, y};
+	}
+
 	// does the system percolate?
 	public boolean percolates() {
 		return false;
@@ -71,13 +89,16 @@ public class Percolation {
 
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
+		int[] xy;
 		for (int i = 1; i <= gridSize; i++) {
 			for (int j = 1; j <= gridSize; j++) {
 				if (isOpen(i, j)) {
-					builder.append("O ");
+					builder.append("O");
 				} else {
-					builder.append("■ ");
+					builder.append("■");
 				}
+				builder.append(nodes.find(xyTo1D(i, j)));
+				builder.append(" ");
 			}
 			builder.append("\n");
 		}
