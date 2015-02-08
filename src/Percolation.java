@@ -92,37 +92,4 @@ public class Percolation {
 		return false;
 	}
 
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		for (int i = 1; i <= gridSize; i++) {
-			for (int j = 1; j <= gridSize; j++) {
-				if (isOpen(i, j)) {
-					builder.append("O");
-				} else {
-					builder.append("■");
-				}
-				builder.append(" ");
-			}
-			builder.append("\n");
-		}
-		builder.append("percolates? ").append(percolates());
-		return builder.toString();
-	}
-
-	// test client (optional)
-	public static void main(String[] args) {
-		Percolation p = new Percolation(3);
-
-		// open first site
-		System.out.println("\nopen (1,1)");
-		p.open(1, 1);
-		System.out.println(p);
-
-		// open rest of first column
-		System.out.println("\nopen (2,1), (3,1)");
-		p.open(2, 1);
-		p.open(3, 1);
-		System.out.println(p);
-	}
-
 }
