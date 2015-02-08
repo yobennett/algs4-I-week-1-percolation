@@ -1,9 +1,28 @@
+/**
+ * We model a percolation system using an N-by-N grid of sites. Each site is
+ * either open or blocked. A full site is an open site that can be connected
+ * to an open site in the top row via a chain of neighboring (left, right,
+ * up, down) open sites. We say the system percolates if there is a full site
+ * in the bottom row. In other words, a system percolates if we fill all open
+ * sites connected to the top row and that process fills some open site on
+ * the bottom row.
+ *
+ * To determine when a system percolates, we use a weighted union-find data
+ * structure to represent the sites. Virtual sites are added to the top and
+ * bottom of the grid. As a site is opened it is connected to its neighbors.
+ * The system percolates once the virtual sites are in the same connected
+ * component.
+ */
 public class Percolation {
 
 	private int N;
 	private boolean[][] grid;
 	private WeightedQuickUnionUF sites;
 
+	/**
+	 * Constructs a percolation system.
+	 * @param N the dimensions of the sites grid
+	 */
 	public Percolation(int N) {
 		if (N <= 0) {
 			throw new IllegalArgumentException("grid size must be positive");
@@ -13,28 +32,45 @@ public class Percolation {
 		initializeGrid();
 	}
 
-	// open site (row i, column j) if it is not open already
-	public void open(int i, int j) {
-		checkWithinGridBounds(i, j);
-		if (!isOpen(i, j)) {
-			grid[i][j] = true;
-			connectToNeighbors(i, j);
+	/**
+	 * Opens a site and connects the site to its open neighbors.
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 */
+	public void open(int p, int q) {
+		checkWithinGridBounds(p, q);
+		if (!isOpen(p, q)) {
+			grid[p][q] = true;
+			connectToNeighbors(p, q);
 		}
 	}
 
-	// is site (row i, column j) open?
-	public boolean isOpen(int i, int j) {
-		checkWithinGridBounds(i, j);
-		return grid[i][j];
+	/**
+	 * Checks if a site is open.
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 * @return true if the site is open
+	 */
+	public boolean isOpen(int p, int q) {
+		checkWithinGridBounds(p, q);
+		return grid[p][q];
 	}
 
-	// is site (row i, column j) full?
-	public boolean isFull(int i, int j) {
-		checkWithinGridBounds(i, j);
-		return isOpen(i, j) && sites.connected(0, xyToIndex(i, j));
+	/**
+	 * Checks if a site is full.
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 * @return true if the site is full
+	 */
+	public boolean isFull(int p, int q) {
+		checkWithinGridBounds(p, q);
+		return isOpen(p, q) && sites.connected(0, gridToIndex(p, q));
 	}
 
-	// does the system percolate?
+	/**
+	 * Checks if the system percolates from top to bottom.
+	 * @return true if the system percolates
+	 */
 	public boolean percolates() {
 		for (int i = 1; i <= N; i++) {
 			if (isFull(N, i)) {
@@ -44,7 +80,11 @@ public class Percolation {
 		return false;
 	}
 
-	// initialize grid, ignore first row and column
+	/**
+	 * Initialize the sites grid. We add an row and column to
+	 * make it easier to follow the 1-based coordinates. We
+	 * effectively ignore this first row and column.
+	 */
 	private void initializeGrid() {
 		this.grid = new boolean[N + 1][N + 1];
 		int numSites = (N * N) + 2;
@@ -54,37 +94,61 @@ public class Percolation {
 
 		// connect top row to virtual node
 		for (int i = 1; i <= N; i++) {
-			sites.union(virtualTopSiteIndex, xyToIndex(1, i));
+			sites.union(virtualTopSiteIndex, gridToIndex(1, i));
 		}
 
 		// connect bottom row to virtual node
 		for (int j = 1; j <= N; j++) {
-			sites.union(virtualBottomSiteIndex, xyToIndex(N, j));
+			sites.union(virtualBottomSiteIndex, gridToIndex(N, j));
 		}
 	}
 
-	private void checkWithinGridBounds(int i, int j) {
-		if (!isWithinGridBounds(i, j)) {
-			throw new IndexOutOfBoundsException("grid coordinates not within accepted range (i=" + i + ", j=" + j + "+)");
+	/**
+	 * Checks if the given site coordinates are within the grid and
+	 * throws an {@link java.lang.IndexOutOfBoundsException} otherwise.
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 */
+	private void checkWithinGridBounds(int p, int q) {
+		if (!isWithinGridBounds(p, q)) {
+			throw new IndexOutOfBoundsException("grid coordinates not within accepted range (p=" + p + ", q=" + q + "+)");
 		}
 	}
 
-	private boolean isWithinGridBounds(int i, int j) {
-		return i > 0 && i <= N && j > 0 && j <= N;
+	/**
+	 * Returns true if a given site coordinate is within the grid
+	 * excluding the first row and column.
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 * @return true if a given site coordinate is within the grid
+	 */
+	private boolean isWithinGridBounds(int p, int q) {
+		return p > 0 && p <= N && q > 0 && q <= N;
 	}
 
-	private int xyToIndex(int x, int y) {
-		return ((x - 1) * N) + y;
+	/**
+	 * Converts a given site coordinate to an one-dimensional index
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 * @return the converted coordinate as an index
+	 */
+	private int gridToIndex(int p, int q) {
+		return ((p - 1) * N) + q;
 	}
 
-	private void connectToNeighbors(int i, int j) {
-		int[][] neighbors = { {i, j - 1}, {i, j + 1}, {i + 1, j}, {i - 1, j} };
-		int x, y;
+	/**
+	 * Connects a site with given coordinates to its neighbors.
+	 * @param p the row coordinate for the target site
+	 * @param q the column coordinate for the target site
+	 */
+	private void connectToNeighbors(int p, int q) {
+		int[][] neighbors = { {p, q - 1}, {p, q + 1}, {p + 1, q}, {p - 1, q} };
+		int neighborP, neighborQ;
 		for (int[] neighbor : neighbors) {
-			x = neighbor[0];
-			y = neighbor[1];
-			if (x > 0 && x <= N && y > 0 && y <= N && isOpen(x, y)) {
-				sites.union(xyToIndex(i, j), xyToIndex(x, y));
+			neighborP = neighbor[0];
+			neighborQ = neighbor[1];
+			if (neighborP > 0 && neighborP <= N && neighborQ > 0 && neighborQ <= N && isOpen(neighborP, neighborQ)) {
+				sites.union(gridToIndex(p, q), gridToIndex(neighborP, neighborQ));
 			}
 		}
 	}
