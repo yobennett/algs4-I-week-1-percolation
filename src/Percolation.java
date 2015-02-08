@@ -2,15 +2,10 @@ public class Percolation {
 
 	private int gridSize;
 	private boolean[][] grid;
-	private int nodesSize;
 	private WeightedQuickUnionUF nodes;
-	private int virtualTopNodeIndex;
-	private int virtualBottomNodeIndex;
 
 	// constructor
 	public Percolation(int gridSize) {
-
-		// gridSize must be positive
 		if (gridSize <= 0) {
 			throw new IllegalArgumentException("grid size must be positive");
 		}
@@ -19,14 +14,14 @@ public class Percolation {
 		initializeGrid(gridSize);
 	}
 
+	// initialize grid, ignore first row and column
 	private void initializeGrid(int gridSize) {
-		// initialize grid, ignore first row and column
 		this.grid = new boolean[gridSize + 1][gridSize + 1];
 
 		// initialize nodes for weighted quick-union, union-find
-		this.nodesSize = (int) Math.pow(gridSize, 2) + 2;
-		this.virtualTopNodeIndex = 0;
-		this.virtualBottomNodeIndex = nodesSize - 1;
+		int nodesSize = (int) Math.pow(gridSize, 2) + 2;
+		int virtualTopNodeIndex = 0;
+		int virtualBottomNodeIndex = nodesSize - 1;
 		this.nodes = new WeightedQuickUnionUF(nodesSize);
 
 		// connect top row to virtual node
@@ -43,10 +38,21 @@ public class Percolation {
 	// open site (row i, column j) if it is not open already
 	public void open(int i, int j) throws IndexOutOfBoundsException {
 		checkWithinGridBounds(i, j);
-
-		// not already open
 		if (!isOpen(i, j)) {
+			grid[i][j] = true;
+			connectToNeighbors(i, j);
+		}
+	}
 
+	private void connectToNeighbors(int i, int j) {
+		int[][] neighbors = { {i, j - 1}, {i, j + 1}, {i + 1, j}, {i - 1, j} };
+		int x, y;
+		for (int[] neighbor : neighbors) {
+			x = neighbor[0];
+			y = neighbor[1];
+			if (x > 0 && x <= gridSize && y > 0 && y <= gridSize && isOpen(x, y)) {
+				nodes.union(xyTo1D(i,j), xyTo1D(x,y));
+			}
 		}
 	}
 
@@ -95,17 +101,30 @@ public class Percolation {
 				} else {
 					builder.append("■");
 				}
-				builder.append(nodes.find(xyTo1D(i, j)));
+//				builder.append(nodes.find(xyTo1D(i, j)));
+//				builder.append(" ");
+//				builder.append("full?=" + isFull(i, j));
 				builder.append(" ");
 			}
 			builder.append("\n");
 		}
+		builder.append("percolates? " + percolates());
 		return builder.toString();
 	}
 
 	// test client (optional)
 	public static void main(String[] args) {
 		Percolation p = new Percolation(3);
+
+		// open first site
+		System.out.println("\nopen (1,1)");
+		p.open(1, 1);
+		System.out.println(p);
+
+		// open rest of first column
+		System.out.println("\nopen (2,1), (3,1)");
+		p.open(2, 1);
+		p.open(3, 1);
 		System.out.println(p);
 	}
 
