@@ -101,14 +101,11 @@ public class Percolation {
 				} else {
 					builder.append("■");
 				}
-//				builder.append(nodes.find(xyTo1D(i, j)));
-//				builder.append(" ");
-//				builder.append("full?=" + isFull(i, j));
 				builder.append(" ");
 			}
 			builder.append("\n");
 		}
-		builder.append("percolates? " + percolates());
+		builder.append("percolates? ").append(percolates());
 		return builder.toString();
 	}
 
