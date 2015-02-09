@@ -82,7 +82,11 @@ public class Percolation {
      * @return true if the system percolates
      */
     public boolean percolates() {
-        return sites.connected(0, (N * N) + 1);
+        if (N == 1) {
+            return isOpen(1, 1);
+        } else {
+            return sites.connected(0, (N * N) + 1);
+        }
     }
 
     /**
