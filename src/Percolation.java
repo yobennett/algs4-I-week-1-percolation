@@ -98,22 +98,8 @@ public class Percolation {
     private void initializeGrid() {
         this.grid = new boolean[N + 1][N + 1];
         int numSites = (N * N) + 2;
-        int virtualTopSiteIndex = 0;
-        int virtualBottomSiteIndex = numSites - 1;
         this.sites = new WeightedQuickUnionUF(numSites);
         this.sitesWithoutVirtualBottomSite = new WeightedQuickUnionUF(numSites - 1);
-
-        /*
-        // connect top row to virtual node
-        for (int i = 1; i <= N; i++) {
-            sites.union(virtualTopSiteIndex, gridToIndex(1, i));
-        }
-
-        // connect bottom row to virtual node
-        for (int j = 1; j <= N; j++) {
-            sites.union(virtualBottomSiteIndex, gridToIndex(N, j));
-        }
-        */
     }
 
     /**
@@ -159,18 +145,6 @@ public class Percolation {
      * @param q the column coordinate for the target site
      */
     private void connectToOpenNeighbors(int p, int q) {
-        /*
-        int[][] neighbors = {{p, q - 1}, {p, q + 1}, {p + 1, q}, {p - 1, q}};
-        int neighborP, neighborQ;
-        for (int[] neighbor : neighbors) {
-            neighborP = neighbor[0];
-            neighborQ = neighbor[1];
-            if (neighborP > 0 && neighborP <= N && neighborQ > 0 && neighborQ <= N && isOpen(neighborP, neighborQ)) {
-                sites.union(gridToIndex(p, q), gridToIndex(neighborP, neighborQ));
-            }
-        }
-        */
-
         int index = gridToIndex(p, q);
 
         if (p == 1) {
@@ -205,7 +179,6 @@ public class Percolation {
             sites.union(gridToIndex(p, q + 1), index);
             sitesWithoutVirtualBottomSite.union(gridToIndex(p, q + 1), index);
         }
-
     }
 
 }
