@@ -18,6 +18,7 @@ public class Percolation {
     private int N;
     private boolean[][] grid;
     private WeightedQuickUnionUF sites;
+    private WeightedQuickUnionUF sitesWithoutVirtualBottomSite;
 
     /**
      * Constructs a percolation system.
@@ -43,7 +44,7 @@ public class Percolation {
         checkWithinGridBounds(p, q);
         if (!isOpen(p, q)) {
             grid[p][q] = true;
-            connectToNeighbors(p, q);
+            connectToOpenNeighbors(p, q);
         }
     }
 
@@ -62,13 +63,17 @@ public class Percolation {
     /**
      * Checks if a site is full.
      *
+     * To prevent backwash, we check against the sites without
+     * a virtual bottom site. Otherwise, we may incorrectly
+     * mark a site as full.
+     *
      * @param p the row coordinate for the target site
      * @param q the column coordinate for the target site
      * @return true if the site is full
      */
     public boolean isFull(int p, int q) {
         checkWithinGridBounds(p, q);
-        return isOpen(p, q) && sites.connected(0, gridToIndex(p, q));
+        return isOpen(p, q) && sitesWithoutVirtualBottomSite.connected(0, gridToIndex(p, q));
     }
 
     /**
@@ -96,7 +101,9 @@ public class Percolation {
         int virtualTopSiteIndex = 0;
         int virtualBottomSiteIndex = numSites - 1;
         this.sites = new WeightedQuickUnionUF(numSites);
+        this.sitesWithoutVirtualBottomSite = new WeightedQuickUnionUF(numSites - 1);
 
+        /*
         // connect top row to virtual node
         for (int i = 1; i <= N; i++) {
             sites.union(virtualTopSiteIndex, gridToIndex(1, i));
@@ -106,6 +113,7 @@ public class Percolation {
         for (int j = 1; j <= N; j++) {
             sites.union(virtualBottomSiteIndex, gridToIndex(N, j));
         }
+        */
     }
 
     /**
@@ -145,12 +153,13 @@ public class Percolation {
     }
 
     /**
-     * Connects a site with given coordinates to its neighbors.
+     * Connects an open site with its open neighbors.
      *
      * @param p the row coordinate for the target site
      * @param q the column coordinate for the target site
      */
-    private void connectToNeighbors(int p, int q) {
+    private void connectToOpenNeighbors(int p, int q) {
+        /*
         int[][] neighbors = {{p, q - 1}, {p, q + 1}, {p + 1, q}, {p - 1, q}};
         int neighborP, neighborQ;
         for (int[] neighbor : neighbors) {
@@ -160,6 +169,43 @@ public class Percolation {
                 sites.union(gridToIndex(p, q), gridToIndex(neighborP, neighborQ));
             }
         }
+        */
+
+        int index = gridToIndex(p, q);
+
+        if (p == 1) {
+            // if first row connect to virtual top in both data structures
+            sites.union(0, index);
+            sitesWithoutVirtualBottomSite.union(0, index);
+        } else if (p == N) {
+            // if last row connect to virtual bottom in ONLY main data structure
+            sites.union((N * N) + 1, index);
+        }
+
+        // top
+        if (isWithinGridBounds(p - 1, q) && isOpen(p - 1, q)) {
+            sites.union(gridToIndex(p - 1, q), index);
+            sitesWithoutVirtualBottomSite.union(gridToIndex(p - 1, q), index);
+        }
+
+        // bottom
+        if (isWithinGridBounds(p + 1, q) && isOpen(p + 1, q)) {
+            sites.union(gridToIndex(p + 1, q), index);
+            sitesWithoutVirtualBottomSite.union(gridToIndex(p + 1, q), index);
+        }
+
+        // left
+        if (isWithinGridBounds(p , q - 1) && isOpen(p, q - 1)) {
+            sites.union(gridToIndex(p, q - 1), index);
+            sitesWithoutVirtualBottomSite.union(gridToIndex(p, q - 1), index);
+        }
+
+        // right
+        if (isWithinGridBounds(p , q + 1) && isOpen(p, q + 1)) {
+            sites.union(gridToIndex(p, q + 1), index);
+            sitesWithoutVirtualBottomSite.union(gridToIndex(p, q + 1), index);
+        }
+
     }
 
 }
